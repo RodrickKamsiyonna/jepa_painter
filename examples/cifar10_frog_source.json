@@ -1,0 +1,9 @@
+{
+  "dataset": "uoft-cs/cifar10",
+  "split": "train",
+  "row_index": 1,
+  "label": 6,
+  "endpoint": "https://datasets-server.huggingface.co/rows?dataset=uoft-cs%2Fcifar10&config=plain_text&split=train&offset=1&length=1",
+  "note": "One server-rendered preview fetched; no dataset archives or shards downloaded.",
+  "class": "frog"
+}
