@@ -145,6 +145,15 @@ powers versus fixed powers 2,10,100 with identical geometry/colors, a sheet of t
 and a JSON report. These images demonstrate data generation, not trained-model
 performance. Supply another native 32×32 image using `--image`.
 
+Compare 8 versus 16 curve samples at fixed powers 10 and 100 on identical strokes:
+
+```bash
+python scripts/compare_samples.py --output outputs/samples-comparison
+```
+
+This saves final and per-stage comparison grids, trajectory tensors and metrics.
+`samples` also changes longitudinal stamp length and overlap in the renderer.
+
 ## Objective and layout
 
 Training retains mean open-loop dynamics error at each stage end, direct two-view
@@ -158,6 +167,7 @@ The latent recurrence is `z_next = sigmoid(xa)*z + sigmoid(-xa)*s`.
 - `painting/model.py`: image/action encoders, recurrence and losses.
 - `painting/planning.py`: joint normalized-action optimization and image tiling.
 - `painting/training.py`: training, checkpoints and shared evaluation.
+- `painting/video.py`: streamed playback of planned strokes across all image tiles.
 - `painting/cli.py`: command-line entry points.
 - `scripts/check_data_generation.py`: reproducible single-image diagnostics.
 - `tests/test_core.py`: formula/bounds, high-power stability, power gradients and
@@ -165,3 +175,25 @@ The latent recurrence is `z_next = sigmoid(xa)*z + sigmoid(-xa)*s`.
 
 The code is Apache-2.0 licensed (see `LICENSE`). Add author and project citation
 metadata before publication. No research performance claims are implied by tests.
+
+### Stroke drawing video
+
+Install video support with `pip install -e ".[video]"`. The `plan` command now
+writes `painting.mp4` alongside the final PNG and stroke tensors. It starts with
+the entire image white and advances every 32×32 tile together, then holds the
+rendered final painting for one second. The target image is not substituted for
+the rendered result. Planning optimization happens first; the video replays the
+selected plan rather than its optimization iterations.
+
+```bash
+python -m painting plan --checkpoint /kaggle/working/paint-run/latest.pt \
+  --image /kaggle/working/goal.png --output /kaggle/working/painting \
+  --video_fps 30 --video_strokes_per_frame 8 --video_scale 1
+```
+
+Use `--video_strokes_per_frame 1` to show each stroke separately, and
+`--video_scale 8` to enlarge a 32×32 painting for viewing. Larger images retain
+their native dimensions with scale 1. All tiles advance in parallel; no grid
+lines are painted into the image. Use `--no_video` to export only static outputs
+without installing the video dependencies. MP4 encoding is lossy; the PNG and
+replay tensors preserve the original rendered pixels.

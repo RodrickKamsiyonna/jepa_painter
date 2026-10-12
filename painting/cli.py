@@ -70,6 +70,10 @@ def parser():
         if command == "plan":
             p.add_argument("--image", required=True)
             p.add_argument("--tile_batch_size", type=int, default=4)
+            p.add_argument("--no_video", action="store_true")
+            p.add_argument("--video_fps", type=int, default=30)
+            p.add_argument("--video_strokes_per_frame", type=int, default=8)
+            p.add_argument("--video_scale", type=int, default=1)
         else:
             p.add_argument("--data", default="./data")
             p.add_argument("--fake", action="store_true")
@@ -92,6 +96,13 @@ def main():
         train(args, cfg)
         return
     device = torch.device(args.device)
+    if args.command == "plan" and not args.no_video:
+        from .video import require_video_writer
+
+        for name in ("video_fps", "video_strokes_per_frame", "video_scale"):
+            if getattr(args, name) <= 0:
+                raise ValueError(f"{name} must be positive")
+        require_video_writer()
     model, cfg, _ = load_checkpoint(args.checkpoint, device)
     for name in ("plan_iters", "plan_restarts"):
         if getattr(args, name) is not None:
@@ -121,6 +132,16 @@ def main():
             },
             output / "strokes.pt",
         )
+        if not args.no_video:
+            from .video import save_stroke_video
+
+            save_stroke_video(
+                output / "painting.mp4", strokes, layout, cfg,
+                fps=args.video_fps,
+                strokes_per_frame=args.video_strokes_per_frame,
+                scale=args.video_scale,
+            )
+            print(f"Stroke replay saved to {output / 'painting.mp4'}", flush=True)
     else:
         if args.images <= 0 or args.batch_size <= 0:
             raise ValueError("images and batch_size must be positive")
