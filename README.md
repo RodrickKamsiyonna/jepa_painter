@@ -12,8 +12,8 @@ Use Python 3.10 or newer. From the repository folder, run:
 pip install -e ".[video]"
 ```
 
-All commands below use `python -m painting`. In a Kaggle notebook, put `!` before
-each shell command and run it from the repository folder.
+Run the commands below from the repository folder. Training automatically uses
+CUDA when available and otherwise runs on the CPU.
 
 ## Train
 
@@ -56,9 +56,8 @@ epochs, including those already completed. Use the same GPU count and batch size
 as the original run. For two GPUs, use the `torchrun` launcher shown above.
 Brush and model settings are restored from the checkpoint.
 
-On Kaggle, the checkpoint path may be `/kaggle/working/paint-run/latest.pt`.
-If it was saved as a Kaggle dataset, use its path under `/kaggle/input/` and keep
-the output folder under `/kaggle/working/`.
+If your checkpoint is in another folder, pass its path to `--resume`. Use
+`--output` to choose where the resumed run saves its results.
 
 ### Weights & Biases
 
