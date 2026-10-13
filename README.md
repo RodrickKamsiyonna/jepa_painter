@@ -29,11 +29,7 @@ Download the weights from
 [rodrick-kamsi/jepa-painter on Hugging Face](https://huggingface.co/rodrick-kamsi/jepa-painter).
 Open **Files and versions**, download the checkpoint and save it as
 `checkpoints/pretrained.pt` in your local copy of this repository. Create the
-`checkpoints/` folder if needed. The weights are downloaded separately from the
-code; Git LFS is not needed for this repository.
-
-The checkpoint was saved at epoch **285**, with `max_p=16`, 8 samples per curve and
-grids `1,2,4,8`. Its model and brush settings are loaded automatically.
+`checkpoints/` folder if needed.
 
 Paint an image using the pretrained model:
 
@@ -63,9 +59,9 @@ python -m painting train \
   --data ./data \
   --output paint-run \
   --epochs 300 \
-  --batch_size 64 \
+  --batch_size 256 \
   --workers 2 \
-  --max_p 100
+  --max_p 16
 ```
 
 CIFAR-10 downloads to `--data` if it is missing. Checkpoints, metrics and evaluation
@@ -75,10 +71,10 @@ For two GPUs:
 
 ```bash
 OMP_NUM_THREADS=1 torchrun --standalone --nproc_per_node=2 -m painting train \
-  --data ./data --output paint-run --epochs 300 --batch_size 64 --workers 2
+  --data ./data --output paint-run --epochs 300 --batch_size 256 --workers 2 --max_p 16
 ```
 
-The batch size is shared across GPUs: 64 means 32 images per GPU with two GPUs.
+The batch size is shared across GPUs: 256 means 128 images per GPU with two GPUs.
 
 ### Resume training
 
@@ -87,12 +83,13 @@ python -m painting train \
   --resume paint-run/latest.pt \
   --data ./data \
   --output paint-run \
-  --epochs 600 \
-  --batch_size 64 \
-  --workers 2
+  --epochs 300 \
+  --batch_size 256 \
+  --workers 2 \
+  --max_p 16
 ```
 
-This restores the model, optimizer and saved epoch. `--epochs 600` means 600 total
+This restores the model, optimizer and saved epoch. `--epochs 300` means 300 total
 epochs, including those already completed. Use the same GPU count and batch size
 as the original run. For two GPUs, use the `torchrun` launcher shown above.
 Brush and model settings are restored from the checkpoint.
