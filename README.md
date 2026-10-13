@@ -4,6 +4,14 @@ A painting world model trained on CIFAR-10 images at 32×32 resolution. It learn
 how brush strokes change a canvas, then plans strokes to paint a target image.
 Larger images are split into 32×32 tiles and combined at their original size.
 
+## Painting example
+
+| Original image | Painting process |
+| --- | --- |
+| <img src="examples/landscape.jpeg" alt="Original landscape with pink trees beside a river" width="300"> | <a href="examples/landscape_paint.mp4"><img src="examples/landscape_paint.png" alt="Painted landscape; click to watch the strokes being drawn" width="300"></a> |
+
+Click the painted image to [watch the painting process](examples/landscape_paint.mp4).
+
 ## Install
 
 Use Python 3.10 or newer. From the repository folder, run:
