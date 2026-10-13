@@ -1,0 +1,8 @@
+{
+  "dataset": "uoft-cs/cifar10",
+  "split": "train",
+  "row_idx": 6,
+  "label": 1,
+  "class": "automobile",
+  "preview_endpoint": "https://datasets-server.huggingface.co/rows?dataset=uoft-cs%2Fcifar10&config=plain_text&split=train&offset=0&length=30"
+}

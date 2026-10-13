@@ -23,6 +23,39 @@ pip install -e ".[video]"
 Run the commands below from the repository folder. Training automatically uses
 CUDA when available and otherwise runs on the CPU.
 
+## Pretrained model
+
+Download the weights from
+[rodrick-kamsi/jepa-painter on Hugging Face](https://huggingface.co/rodrick-kamsi/jepa-painter).
+Open **Files and versions**, download the checkpoint and save it as
+`checkpoints/pretrained.pt` in your local copy of this repository. Create the
+`checkpoints/` folder if needed. The weights are downloaded separately from the
+code; Git LFS is not needed for this repository.
+
+The checkpoint was saved at epoch **285**, with `max_p=16`, 8 samples per curve and
+grids `1,2,4,8`. Its model and brush settings are loaded automatically.
+
+Paint an image using the pretrained model:
+
+```bash
+python -m painting plan \
+  --checkpoint checkpoints/pretrained.pt \
+  --image example.png \
+  --output outputs/pretrained-painting
+```
+
+Evaluate it on CIFAR-10:
+
+```bash
+python -m painting evaluate \
+  --checkpoint checkpoints/pretrained.pt \
+  --data ./data --images 100 --output outputs/pretrained-evaluation
+```
+
+Both commands use CUDA when available. Add `--device cpu` to run on the CPU.
+Checkpoint configuration, parameter counts and a SHA-256 checksum are recorded
+in [checkpoints/pretrained.json](checkpoints/pretrained.json).
+
 ## Train
 
 ```bash
@@ -140,6 +173,23 @@ python -m painting plan --help
 ```
 
 ## Brush and model
+
+The image encoder is a **ResNet-18** adapted to 32×32 images, with a 3×3 input
+convolution, no initial max-pooling, GroupNorm and a projection to a 512-dimensional
+latent representation. It is trained with the world model.
+
+The **Transformer action encoder** takes the **16 ordered strokes** of one action
+as its input tokens. The pretrained model uses four Transformer layers, four
+attention heads and a hidden size of 128. Its outputs control the latent canvas
+update.
+
+The pretrained model has **15,146,048 trainable parameters**:
+
+| Component | Parameters |
+| --- | ---: |
+| ResNet-18 image encoder and projection | 12,218,944 |
+| Transformer action encoder | 2,927,104 |
+| Total | 15,146,048 |
 
 Strokes use generalized Gaussian stamps along quadratic Bézier curves. Power
 `p = 2` produces a Gaussian brush; higher powers approach a hard rectangular
