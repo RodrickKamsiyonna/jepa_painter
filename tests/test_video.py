@@ -26,3 +26,27 @@ def test_replay_starts_white_and_matches_tiled_render(group):
 def test_replay_rejects_zero_group():
     with pytest.raises(ValueError, match="positive"):
         list(replay_frames(torch.zeros(1, 1, 16, ADIM), (32, 32, 1, 1), Config(), 0))
+
+
+def test_mp4_odd_dimensions_decode_as_yuv420p(tmp_path):
+    imageio = pytest.importorskip("imageio.v2")
+    ffmpeg = pytest.importorskip("imageio_ffmpeg")
+    import subprocess
+
+    from painting.video import save_stroke_video
+
+    cfg = Config(grids=(1,))
+    strokes = to_strokes(torch.rand(1, 1, 16, ADIM), 1, cfg)
+    path = tmp_path / "odd.mp4"
+    save_stroke_video(path, strokes, (29, 31, 1, 1), cfg, fps=2, strokes_per_frame=16)
+    reader = imageio.get_reader(path)
+    try:
+        assert reader.get_data(0).shape == (30, 32, 3)
+        assert reader.count_frames() == 4
+    finally:
+        reader.close()
+    probe = subprocess.run(
+        [ffmpeg.get_ffmpeg_exe(), "-i", str(path), "-f", "null", "-"],
+        capture_output=True, text=True, check=True,
+    )
+    assert "yuv420p" in probe.stderr

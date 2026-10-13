@@ -197,3 +197,6 @@ their native dimensions with scale 1. All tiles advance in parallel; no grid
 lines are painted into the image. Use `--no_video` to export only static outputs
 without installing the video dependencies. MP4 encoding is lossy; the PNG and
 replay tensors preserve the original rendered pixels.
+Videos use H.264 with `yuv420p` for browser and mobile compatibility. Odd image
+dimensions receive one extra edge pixel on the right or bottom; PNGs retain the
+original dimensions.

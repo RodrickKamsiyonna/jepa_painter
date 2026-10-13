@@ -46,14 +46,20 @@ def save_stroke_video(path, strokes, layout, cfg, fps=30, strokes_per_frame=8, s
     imageio = require_video_writer()
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    # yuv444p supports odd native image dimensions; no encoder resizing/cropping.
+    # yuv420p requires even dimensions. Pad the right/bottom edge instead of
+    # resizing the painting; enable progressive playback before full download.
     with imageio.get_writer(
-        str(path), fps=fps, codec="libx264", pixelformat="yuv444p", macro_block_size=1
+        str(path), fps=fps, codec="libx264", pixelformat="yuv420p", macro_block_size=1,
+        output_params=["-movflags", "+faststart"],
     ) as writer:
         for frame in replay_frames(strokes, layout, cfg, strokes_per_frame):
             if scale != 1:
                 frame = F.interpolate(frame[None], scale_factor=scale, mode="nearest")[0]
             pixels = frame.clamp(0, 1).mul(255).round().byte().permute(1, 2, 0).cpu().numpy()
+            pixels = np.pad(
+                pixels, ((0, pixels.shape[0] % 2), (0, pixels.shape[1] % 2), (0, 0)),
+                mode="edge",
+            )
             writer.append_data(np.ascontiguousarray(pixels))
         # Hold the rendered final painting for one second.
         for _ in range(fps):
